@@ -47,6 +47,21 @@
         .hide {
             visibility: hidden;
         }
+
+        input,
+        select,
+        button {
+            border: solid 2px;
+        }
+
+        button {
+            background-color: lightgrey;
+            cursor: pointer;
+        }
+
+        p {
+            font-size: 11px;
+        }
     </style>
 </head>
 
@@ -54,68 +69,165 @@
     <table class="information" align="center">
         <tr>
             <th>
-                Тема
+                Меню
             </th>
             <th>
-                Подтема
+                Список
             </th>
             <th>
-                Содержание
+                Содержимое
             </th>
         </tr>
         <tr>
             <td>
-                <div class="theme">Тема 1</div>
-                <div class="theme">Тема 2</div>
+                <div class="theme">Сделки</div>
+                <div class="theme">Контакты</div>
             </td>
-            <td>
-                <div class="subtheme"></div>
-                <div class="subtheme"></div>
-                <div class="subtheme"></div>
+
+            <td class="list hide">
+                <script>
+                    let them = document.querySelectorAll('.theme');
+                    them.forEach(t => {
+                        t.addEventListener('click', function() {
+                            switch (this.textContent) {
+
+                                case "Сделки":
+                                    <?php
+
+                                    $jsonData = file_get_contents('data.json');
+
+                                    $dataArray = json_decode($jsonData, true);
+                                    foreach ($dataArray["deals"] as $row) {
+                                        echo "</script><div class='subtheme' id='" . $row["id"] . "'>" . $row["dealname"] . "</div><script>";
+                                    }
+                                    ?>break;
+                                case "Контакты":
+                                    <?php
+
+                                    $jsonData = file_get_contents('data.json');
+
+                                    $dataArray = json_decode($jsonData, true);
+                                    foreach ($dataArray["contacts"] as $row) {
+                                        echo "</script><div class='subtheme' id='" . $row["id"] . "'>" . $row["name"] . " " . $row["surname"] . "</div><script>";
+                                    }
+                                    ?>break;
+                            }
+                        });
+                    });
+                </script>
             </td>
-            <td class="content">
+            <td class="content" rowspan="2">
                 Некий текст
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <form action="deal_request.php" method="post">
+                    <p>Наименование (обязательно):</p><br>
+                    <input name="deal" id="deal" type="text"><br>
+                    <p>Сумма:</p><br>
+                    <input name="amount" id="amount" type="number"><br>
+                    <p>Контакты:</p><br>
+                    <select multiple name="contactsarr[]" id="contacts"><br>
+                        <?php
+                        $jsonData = file_get_contents('data.json');
+
+                        $dataArray = json_decode($jsonData, true);
+                        foreach ($dataArray["contacts"] as $row) {
+                            echo "<option value='" . $row["id"] . "'>" . $row["id"] . " " . $row["name"] . " " . $row["surname"] . "</option>";
+                        }
+                        ?>
+                    </select><br>
+                    <button type="submit">Добавить сделку</button>
+                </form>
+            </td>
+
+            <td>
+                <form action="contact_request.php" method="post">
+                    <p>Имя (обязательно):</p><br>
+                    <input name="name" id="name" type="text"><br>
+                    <p>Фамилия:</p><br>
+                    <input name="surname" id="surname" type="text"><br>
+                    <p>Сделки:</p><br>
+                    <select multiple name="dealsarr[]" id="deals">
+                        <?php
+                        $jsonData = file_get_contents('data.json');
+
+                        $dataArray = json_decode($jsonData, true);
+                        foreach ($dataArray["deals"] as $row) {
+                            echo "<option value='" . $row["id"] . "'>" . $row["id"] . " " . $row["dealname"] . "</option>";
+                        }
+                        ?>
+                    </select><br>
+                    <button type="submit">Добавить контакт</button>
+                </form>
             </td>
         </tr>
     </table>
 
     <script>
-        themes_list = {
-            "Тема 1": ["Подтема 1.1", "Подтема 1.2", "Подтема 1.3"],
-            "Тема 2": ["Подтема 2.1", "Подтема 2.2", "Подтема 2.3"]
-        }
-
+        var jsArray = <?php echo $jsonData; ?>;
         document.addEventListener('DOMContentLoaded', function() {
-
             let themes = document.querySelectorAll('.theme');
             let subthemes = document.querySelectorAll('.subtheme');
             let content = document.querySelector('.content');
 
             themes.forEach(theme => {
                 theme.addEventListener('click', function() {
-
+                    document.querySelector('.list').classList.remove("hide");
                     themes.forEach(i => i.classList.remove('selected'));
                     subthemes.forEach(i => i.classList.remove('selected'));
 
                     this.classList.add('selected');
                     subthemes.forEach(i => i.textContent = "");
 
-                    const show_list = document.querySelectorAll(`.subtheme`);
                     switch (this.textContent) {
 
-                        case Object.keys(themes_list)[0]:
-                            show_list.forEach((i, c) => i.textContent = themes_list[Object.keys(themes_list)[0]][c]);
+                        case "Сделки":
+                            subthemes.forEach((i, c) => {
+                                if (i.id == jsArray["deals"][c]["id"]) {
+                                    i.innerHTML = jsArray["deals"][c]["dealname"];
+                                }
+                            });
                             break;
 
-                        case Object.keys(themes_list)[1]:
-                            show_list.forEach((i, c) => i.textContent = themes_list[Object.keys(themes_list)[1]][c]);
+                        case "Контакты":
+                            subthemes.forEach((i, c) => {
+                                if (i.id == jsArray["contacts"][c]["id"]) {
+                                    i.innerHTML = jsArray["contacts"][c]["name"] + " " + jsArray["contacts"][c]["surname"];
+                                }
+                            });
                             break;
 
                         default:
                             break;
                     }
-                    show_list[0].classList.add('selected');
-                    content.textContent = `Некий текст, привязанный к ${show_list[0].textContent}`;
+
+
+                    switch (document.getElementsByClassName("theme selected")[0].innerHTML) {
+
+                        case "Сделки":
+                            for (let i = 0; i <= jsArray["deals"].length; i++) {
+                                if (jsArray["deals"][i]["id"] == this.id) {
+                                    content.innerHTML = `ID сделки - ${jsArray["deals"][i]["id"]}<br>Наименование - ${jsArray["deals"][i]["dealname"]}<br>Сумма - ${jsArray["deals"][i]["amount"]}<br>ID контактов - ${jsArray["deals"][i]["contactslist"]}`;
+                                    subthemes[0].classList.add('selected');
+                                }
+                            }
+                            break;
+
+                        case "Контакты":
+                            for (let i = 0; i <= jsArray["contacts"].length; i++) {
+                                if (jsArray["contacts"][i]["id"] == this.id) {
+                                    content.innerHTML = `ID контакта - ${jsArray["contacts"][i]["id"]}<br>Имя - ${jsArray["contacts"][i]["name"]}<br>Фамилия - ${jsArray["contacts"][i]["surname"]}<br>ID сделок - ${jsArray["contacts"][i]["dealslist"]}`;
+                                    subthemes[0].classList.add('selected');
+                                }
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
+
 
 
                 });
@@ -126,8 +238,29 @@
 
                     subthemes.forEach(i => i.classList.remove('selected'));
                     this.classList.add('selected');
-                    content.textContent = `Некий текст, привязанный к ${this.textContent}`;
 
+
+                    switch (document.getElementsByClassName("theme selected")[0].innerHTML) {
+
+                        case "Сделки":
+                            for (let i = 0; i <= jsArray["deals"].length; i++) {
+                                if (jsArray["deals"][i]["id"] == this.id) {
+                                    content.innerHTML = `ID сделки - ${jsArray["deals"][i]["id"]}<br>Наименование - ${jsArray["deals"][i]["dealname"]}<br>Сумма - ${jsArray["deals"][i]["amount"]}<br>ID контактов - ${jsArray["deals"][i]["contactslist"]}`;
+                                }
+                            }
+                            break;
+
+                        case "Контакты":
+                            for (let i = 0; i <= jsArray["contacts"].length; i++) {
+                                if (jsArray["contacts"][i]["id"] == this.id) {
+                                    content.innerHTML = `ID контакта - ${jsArray["contacts"][i]["id"]}<br>Имя - ${jsArray["contacts"][i]["name"]}<br>Фамилия - ${jsArray["contacts"][i]["surname"]}<br>ID сделок - ${jsArray["contacts"][i]["dealslist"]}`;
+                                }
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
                 });
             });
         });

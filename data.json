@@ -1,0 +1,56 @@
+{ 
+  "deals": [
+    {
+    "id": 0,
+    "dealname": "Хотят люстру",
+    "amount": 5000,
+    "contactslist": [
+      0
+    ]
+  },
+  {
+    "id": 1,
+    "dealname": "Хотят светильник",
+    "amount": 2500,
+    "contactslist": [
+      2
+    ]
+  },
+  {
+    "id": 2,
+    "dealname": "Пока думают",
+    "amount": 4000,
+    "contactslist": [
+      0,
+      1
+    ]
+  }
+],
+  "contacts": [
+    {
+      "id": 0,
+      "name": "Василий",
+      "surname": "Иванов",
+      "dealslist": [
+        0,
+        2
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Иван",
+      "surname": "Петров",
+      "dealslist": [
+        2
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Наталья",
+      "surname": "Сидорова",
+      "dealslist": [
+        1
+      ]
+    }
+]
+}
